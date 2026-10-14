@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FluidTube 60 — YouTube Downloader & 60 FPS Frame Interpolator</title>
+  <meta name="description" content="FluidTube: Download YouTube videos and guarantee silky 60 FPS output via native stream fetching or FFmpeg motion vector frame interpolation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <!-- Ambient background glow -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <div class="app-layout">
+    <!-- Navbar / Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>FluidTube <span class="accent-text">60</span></h1>
+          <p class="subtitle">YouTube Downloader & 60 FPS Frame Interpolator</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <div id="ffmpeg-badge" class="status-badge checking">
+          <span class="status-dot"></span>
+          <span id="ffmpeg-status-text">Checking Engine...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Converter Container -->
+    <main class="main-card">
+      <!-- Input Section -->
+      <section class="section-input">
+        <label for="video-url" class="section-label">Paste YouTube Video Link</label>
+        <div class="input-bar">
+          <div class="input-wrapper">
+            <span class="url-icon">🔗</span>
+            <input type="text" id="video-url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+          </div>
+          <button id="btn-paste" class="btn btn-secondary" title="Paste from clipboard">
+            <span>📋</span> Paste
+          </button>
+          <button id="btn-fetch" class="btn btn-primary">
+            <span class="btn-spinner hidden"></span>
+            <span class="btn-text">🔍 Fetch Info</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Video Preview Card (Hidden until URL fetched) -->
+      <section id="preview-section" class="preview-card hidden">
+        <div class="preview-thumbnail-wrapper">
+          <img id="preview-thumb" src="" alt="Video Thumbnail" loading="lazy">
+          <span id="preview-duration-badge" class="badge-overlay">00:00</span>
+        </div>
+        <div class="preview-meta">
+          <h2 id="preview-title" class="preview-title">Video Title</h2>
+          <p id="preview-channel" class="preview-channel">Channel Name</p>
+          <div class="meta-pills">
+            <span id="pill-fps" class="pill pill-fps">⚡ 60 FPS Native</span>
+            <span id="pill-duration" class="pill pill-duration">⏱️ 00:00</span>
+          </div>
+          <p id="preview-engine-hint" class="engine-hint">
+            ⚡ 60 FPS motion interpolation engine ready.
+          </p>
+        </div>
+      </section>
+
+      <!-- Settings Section -->
+      <section class="section-settings">
+        <div class="settings-grid">
+          <!-- Resolution Dropdown -->
+          <div class="setting-item">
+            <label for="select-resolution" class="setting-label">Target Quality</label>
+            <div class="select-wrapper">
+              <select id="select-resolution">
+                <option value="1080p Full HD" selected>1080p Full HD (Recommended)</option>
+                <option value="720p HD">720p HD</option>
+                <option value="Best Quality Available">Best Quality Available (Original)</option>
+                <option value="Audio Only (MP3)">Audio Only (MP3)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 60 FPS Motion Interpolation Toggle -->
+          <div class="setting-item toggle-item">
+            <div class="toggle-info">
+              <span class="setting-label">Force 60 FPS Output</span>
+              <p class="setting-subtext">Synthesizes smooth 60 FPS frames via FFmpeg if source is 24/30 FPS.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-60fps" checked>
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action Button Area -->
+      <section class="section-action">
+        <button id="btn-start" class="btn btn-cta">
+          <span class="btn-cta-icon">🚀</span>
+          <span>Start Download & Process 60 FPS</span>
+        </button>
+      </section>
+
+      <!-- Progress Section (Hidden until processing begins) -->
+      <section id="progress-section" class="progress-card hidden">
+        <div class="progress-header">
+          <div class="progress-status-box">
+            <span class="spinner-pulse"></span>
+            <span id="progress-status" class="progress-status-text">Downloading (45% - 5.2 MB/s)...</span>
+          </div>
+          <span id="progress-percentage" class="progress-pct">0%</span>
+        </div>
+
+        <div class="progress-bar-track">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+
+        <div class="progress-footer">
+          <span id="progress-details" class="progress-details-text">Initializing stream connection...</span>
+          <button id="btn-cancel" class="btn btn-danger btn-sm">⏹️ Cancel</button>
+        </div>
+      </section>
+
+      <!-- Result / Download Section (Hidden until complete) -->
+      <section id="result-section" class="result-card hidden">
+        <div class="result-header">
+          <div class="result-icon">🎉</div>
+          <div>
+            <h3 id="result-heading" class="result-title">Your 60 FPS Video is Ready!</h3>
+            <p id="result-subtext" class="result-subtitle">Rendered with smooth motion interpolation.</p>
+          </div>
+        </div>
+
+        <div class="result-file-info">
+          <div class="file-name-row">
+            <span class="file-icon">📁</span>
+            <span id="result-filename" class="file-name">video_60fps.mp4</span>
+          </div>
+          <span id="result-filesize" class="file-size-badge">42.5 MB</span>
+        </div>
+
+        <div class="result-actions">
+          <a id="btn-download-file" href="#" class="btn btn-download" download>
+            <span>📥 Download File</span>
+          </a>
+          <button id="btn-reset" class="btn btn-secondary">
+            <span>🔄 Convert Another Video</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Error Alert Box -->
+      <div id="error-alert" class="alert-box alert-error hidden">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-content">
+          <h4 class="alert-title">Conversion Notice</h4>
+          <p id="error-message">Error details...</p>
+        </div>
+        <button id="btn-close-error" class="alert-close">&times;</button>
+      </div>
+    </main>
+
+    <!-- Value Propositions / FAQ Section -->
+    <section class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Guaranteed 60 FPS</h3>
+        <p>If the source video is 60fps, it downloads natively. If it's 24fps or 30fps, FFmpeg creates new intermediate frames using motion vectors.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>100% Server-Side Processing</h3>
+        <p>Motion interpolation runs on the server. Generating frames uses zero extra mobile data on your device.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Audio & Video Presets</h3>
+        <p>Supports 1080p Full HD, 720p HD, best available source quality, and high-fidelity 192kbps MP3 audio extraction.</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2026 FluidTube 60 — High-FPS Video Processing Engine. Built with FastAPI & FFmpeg.</p>
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

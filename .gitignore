@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# SmoothMotion Media & Temp Storage
+downloads/
+.smoothmotion_temp/
+*.mp4
+*.mp3
+*.part
+*.ytdl
+
+# Environment & Secrets
+.env
+.env.local
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
