@@ -1,5 +1,5 @@
 """
-SmoothMotion 60 - Video Processing Module
+FluidTube - Video Processing Module
 Handles FFmpeg detection, path resolution, and motion interpolation (framerate=fps=60).
 """
 
@@ -12,7 +12,7 @@ import subprocess
 import threading
 from typing import Optional, Callable, Tuple
 
-logger = logging.getLogger("SmoothMotion.VideoProcessor")
+logger = logging.getLogger("FluidTube.VideoProcessor")
 
 
 class FFmpegManager:

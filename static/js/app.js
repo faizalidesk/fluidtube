@@ -1,5 +1,5 @@
 /**
- * SmoothMotion 60 — Client Application Script
+ * FluidTube — Client Application Script
  * Handles asynchronous video info fetching, real-time progress polling, and direct downloads.
  */
 

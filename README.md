@@ -1,4 +1,4 @@
-# ⚡ FluidTube 60 — Web Edition
+# ⚡ FluidTube — Web Edition
 ### Modern YouTube Downloader & 60 FPS Motion Interpolation Web Service
 
 <div align="center">

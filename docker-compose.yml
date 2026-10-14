@@ -1,9 +1,9 @@
 version: "3.8"
 
 services:
-  smoothmotion:
+  fluidtube:
     build: .
-    container_name: smoothmotion-web
+    container_name: fluidtube-web
     ports:
       - "8000:8000"
     restart: unless-stopped

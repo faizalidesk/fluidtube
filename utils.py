@@ -1,5 +1,5 @@
 """
-SmoothMotion 60 - Web Utilities
+FluidTube - Web Utilities
 Provides helper functions for filename sanitization, duration/filesize formatting,
 and background cleanup of temporary download files.
 """
@@ -10,7 +10,7 @@ import time
 import logging
 from typing import Optional
 
-logger = logging.getLogger("SmoothMotion.Utils")
+logger = logging.getLogger("FluidTube.Utils")
 
 
 def sanitize_filename(name: str, max_length: int = 140) -> str:
@@ -19,7 +19,7 @@ def sanitize_filename(name: str, max_length: int = 140) -> str:
     Removes reserved characters: < > : " / \\ | ? * and control chars.
     """
     if not name:
-        return "SmoothMotion_Video"
+        return "FluidTube_Video"
 
     # Remove invalid filesystem characters
     cleaned = re.sub(r'[<>:"/\\|?*]', "", name)
@@ -29,7 +29,7 @@ def sanitize_filename(name: str, max_length: int = 140) -> str:
     cleaned = cleaned.strip().strip(".")
 
     if not cleaned:
-        cleaned = "SmoothMotion_Video"
+        cleaned = "FluidTube_Video"
 
     if len(cleaned) > max_length:
         cleaned = cleaned[:max_length].strip().strip(".")

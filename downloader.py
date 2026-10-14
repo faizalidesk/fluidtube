@@ -1,5 +1,5 @@
 """
-SmoothMotion 60 - Downloader Engine
+FluidTube - Downloader Engine
 Uses yt-dlp to extract video metadata, select optimal streams, and download video/audio.
 Coordinates with video_processor to perform 60 FPS motion interpolation when native 60fps is not present.
 """
@@ -15,7 +15,7 @@ import yt_dlp
 from utils import sanitize_filename, format_duration, format_filesize
 from video_processor import ffmpeg_manager
 
-logger = logging.getLogger("SmoothMotion.Downloader")
+logger = logging.getLogger("FluidTube.Downloader")
 
 
 class DownloaderError(Exception):
@@ -165,7 +165,7 @@ class Downloader:
             Tuple of (final_filepath: str, used_motion_interpolation: bool)
         """
         os.makedirs(output_dir, exist_ok=True)
-        clean_title = video_info.get("clean_title", "SmoothMotion_Video")
+        clean_title = video_info.get("clean_title", "FluidTube_Video")
         duration = video_info.get("duration", 0)
         formats = video_info.get("formats", [])
 
@@ -312,7 +312,7 @@ class Downloader:
         # CASE 3: 60 FPS Forced & Source is <60 FPS -> Motion Interpolation
         # -------------------------------------------------------------
         # a. Create temp staging directory
-        temp_dir = os.path.join(output_dir, ".smoothmotion_temp")
+        temp_dir = os.path.join(output_dir, ".fluidtube_temp")
         os.makedirs(temp_dir, exist_ok=True)
         temp_file = os.path.join(temp_dir, f"raw_{video_info.get('id', 'temp')}.mp4")
 

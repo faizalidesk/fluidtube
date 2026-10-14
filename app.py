@@ -1,5 +1,5 @@
 """
-SmoothMotion 60 - Web Application Engine
+FluidTube - Web Application Engine
 Production-grade FastAPI server powering the YouTube Downloader & 60 FPS Interpolation web service.
 """
 
@@ -24,7 +24,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
-logger = logging.getLogger("SmoothMotion.Web")
+logger = logging.getLogger("FluidTube.Web")
 
 # Directory paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -152,7 +152,7 @@ async def serve_index():
     if os.path.isfile(index_file):
         with open(index_file, "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
-    return HTMLResponse("<h1>SmoothMotion 60 Web</h1><p>Frontend template loading...</p>")
+    return HTMLResponse("<h1>FluidTube Web</h1><p>Frontend template loading...</p>")
 
 
 @app.get("/api/health")
@@ -161,7 +161,7 @@ async def health_check():
     is_ffmpeg_ok, ffmpeg_path = ffmpeg_manager.detect_ffmpeg()
     return {
         "status": "online",
-        "app_name": "SmoothMotion 60 Web",
+        "app_name": "FluidTube Web",
         "ffmpeg_available": is_ffmpeg_ok,
         "ffmpeg_path": os.path.basename(ffmpeg_path) if ffmpeg_path else None,
     }
@@ -294,5 +294,5 @@ async def download_file(task_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting SmoothMotion 60 Web Server on http://localhost:8000")
+    logger.info("Starting FluidTube Web Server on http://localhost:8000")
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
