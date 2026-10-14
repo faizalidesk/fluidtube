@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { API_BASE_URL } from "../config";
 
-export default function Navbar() {
+export default function Navbar({ onOpenPolicy }) {
   const [serverStatus, setServerStatus] = useState({
     state: "ready", // "ready" | "warning" | "offline"
     text: "Server: Connecting...",
@@ -40,6 +40,15 @@ export default function Navbar() {
           <li><a href="#resolutions">Resolutions</a></li>
           <li><a href="#features">Features</a></li>
           <li><a href="#faq">FAQ</a></li>
+          <li>
+            <button
+              type="button"
+              className="nav-link-btn"
+              onClick={() => onOpenPolicy("about")}
+            >
+              About Us
+            </button>
+          </li>
         </ul>
 
         <div className="nav-actions">

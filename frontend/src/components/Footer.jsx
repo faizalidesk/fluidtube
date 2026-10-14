@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function Footer() {
+export default function Footer({ onOpenPolicy }) {
   return (
     <footer className="footer-wrapper">
       <div className="footer-container">
@@ -14,7 +14,7 @@ export default function Footer() {
               </span>
             </a>
             <p className="footer-brand-desc">
-              Fast, high-quality YouTube video and audio downloader. Free, clean, and reliable media utility.
+              Fast, high-quality YouTube video and audio converter. Clean, secure, and reliable open-source media utility.
             </p>
           </div>
 
@@ -42,6 +42,57 @@ export default function Footer() {
           </div>
 
           <div className="footer-col">
+            <h5>Company & Legal</h5>
+            <ul>
+              <li>
+                <button
+                  type="button"
+                  className="footer-link-btn"
+                  onClick={() => onOpenPolicy("about")}
+                >
+                  About FluidTube
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="footer-link-btn"
+                  onClick={() => onOpenPolicy("privacy")}
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="footer-link-btn"
+                  onClick={() => onOpenPolicy("terms")}
+                >
+                  Terms of Service
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="footer-link-btn"
+                  onClick={() => onOpenPolicy("dmca")}
+                >
+                  DMCA & Copyright
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="footer-link-btn"
+                  onClick={() => onOpenPolicy("contact")}
+                >
+                  Contact Us
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
             <h5>Open Source</h5>
             <ul>
               <li>
@@ -55,7 +106,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href="https://ffmpeg.org" target="_blank" rel="noopener noreferrer">
-                  FFmpeg
+                  FFmpeg Project
                 </a>
               </li>
               <li>
@@ -64,7 +115,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  yt-dlp
+                  yt-dlp Engine
                 </a>
               </li>
               <li>
@@ -73,18 +124,9 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  FastAPI
+                  FastAPI Framework
                 </a>
               </li>
-            </ul>
-          </div>
-
-          <div className="footer-col">
-            <h5>Legal</h5>
-            <ul>
-              <li><a href="#converter">Terms of Use</a></li>
-              <li><a href="#converter">Privacy Policy</a></li>
-              <li><a href="#converter">Disclaimer</a></li>
             </ul>
           </div>
         </div>
