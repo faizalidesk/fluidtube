@@ -106,6 +106,15 @@ class Downloader:
         return None
 
     @staticmethod
+    def get_target_fps(resolution_choice: str) -> Optional[int]:
+        """Parses target FPS from resolution choice string (e.g. 60 or 30)."""
+        if "60 FPS" in resolution_choice or "60fps" in resolution_choice.lower():
+            return 60
+        elif "30 FPS" in resolution_choice or "30fps" in resolution_choice.lower():
+            return 30
+        return None
+
+    @staticmethod
     def download(
         url: str,
         video_info: Dict[str, Any],
@@ -213,7 +222,13 @@ class Downloader:
             idx += 1
 
         target_h = Downloader.get_target_height(resolution_choice)
-        if target_h:
+        target_fps = Downloader.get_target_fps(resolution_choice)
+
+        if target_h and target_fps == 60:
+            fmt = f"bestvideo[height<={target_h}][fps>=50]+bestaudio/bestvideo[height<={target_h}]+bestaudio/best"
+        elif target_h and target_fps == 30:
+            fmt = f"bestvideo[height<={target_h}][fps<=30]+bestaudio/bestvideo[height<={target_h}]+bestaudio/best"
+        elif target_h:
             fmt = f"bestvideo[height<={target_h}]+bestaudio/best[height<={target_h}]/best"
         else:
             fmt = "bestvideo+bestaudio/best"

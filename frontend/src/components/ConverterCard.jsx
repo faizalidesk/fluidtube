@@ -3,7 +3,7 @@ import { API_BASE_URL } from "../config";
 
 export default function ConverterCard() {
   const [url, setUrl] = useState("");
-  const [resolution, setResolution] = useState("1080p Full HD");
+  const [resolution, setResolution] = useState("1080p 60 FPS");
   const [videoInfo, setVideoInfo] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -28,8 +28,14 @@ export default function ConverterCard() {
   function getButtonLabel() {
     if (isDownloading) return "Processing...";
     if (resolution.includes("Audio")) return "Download MP3 Audio";
-    if (resolution.includes("1080p")) return "Download Video (1080p Full HD)";
-    if (resolution.includes("720p")) return "Download Video (720p HD)";
+    if (resolution.includes("1080p") && resolution.includes("60 FPS"))
+      return "Download Video (1080p 60 FPS)";
+    if (resolution.includes("1080p"))
+      return "Download Video (1080p 30 FPS)";
+    if (resolution.includes("720p") && resolution.includes("60 FPS"))
+      return "Download Video (720p 60 FPS)";
+    if (resolution.includes("720p"))
+      return "Download Video (720p 30 FPS)";
     if (resolution.includes("480p")) return "Download Video (480p SD)";
     if (resolution.includes("360p")) return "Download Video (360p Medium)";
     if (resolution.includes("144p")) return "Download Video (144p Low)";
@@ -285,17 +291,25 @@ export default function ConverterCard() {
                 value={resolution}
                 onChange={(e) => setResolution(e.target.value)}
               >
-                <option value="1080p Full HD">
-                  1080p Full HD (1920x1080 MP4)
+                <option value="1080p 60 FPS">
+                  1080p Full HD (60 FPS - Ultra Smooth)
                 </option>
-                <option value="720p HD">720p HD (1280x720 MP4)</option>
+                <option value="1080p 30 FPS">
+                  1080p Full HD (30 FPS - Standard)
+                </option>
+                <option value="720p 60 FPS">
+                  720p HD (60 FPS - High Frame Rate)
+                </option>
+                <option value="720p 30 FPS">
+                  720p HD (30 FPS - Standard)
+                </option>
                 <option value="480p SD">480p SD (854x480 MP4)</option>
                 <option value="360p Medium">360p Medium (640x360 MP4)</option>
                 <option value="144p Low">
                   144p Low (Lightweight / Low Data MP4)
                 </option>
                 <option value="Best Quality Available">
-                  Best Quality Available (Original)
+                  Best Quality Available (Original Max FPS)
                 </option>
                 <option value="Audio Only (MP3)">
                   Audio Only (192kbps MP3)

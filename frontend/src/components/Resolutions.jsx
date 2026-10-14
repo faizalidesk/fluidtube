@@ -3,15 +3,15 @@ import React from "react";
 export default function Resolutions() {
   const list = [
     {
-      tag: "Full HD",
-      title: "1080p Video",
-      desc: "Pristine 1920x1080 resolution for high-end displays, desktop monitors, and TVs.",
+      tag: "60 FPS / 30 FPS",
+      title: "1080p Full HD",
+      desc: "Ultra-smooth 60 FPS motion playback or lightweight 30 FPS standard for desktop monitors and TVs.",
       audio: false,
     },
     {
-      tag: "HD",
-      title: "720p Video",
-      desc: "Standard high definition format balancing crisp visual clarity with fast download speed.",
+      tag: "60 FPS / 30 FPS",
+      title: "720p HD",
+      desc: "High frame rate 60 FPS and 30 FPS balancing crisp visual clarity with fast download speed.",
       audio: false,
     },
     {
