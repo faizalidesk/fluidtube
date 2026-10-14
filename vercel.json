@@ -1,4 +1,10 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist"
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://professor-preserve-theoretical-serum.trycloudflare.com/api/:path*"
+    }
+  ]
 }
