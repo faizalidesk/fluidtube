@@ -1533,3 +1533,125 @@ body.saas-body {
   color: var(--text-main);
 }
 
+/* ==========================================================================
+   SEO GUIDE SECTION STYLING
+   ========================================================================== */
+
+.section-seo-guide {
+  padding: 90px 0;
+  background: #FFFFFF;
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+}
+
+.seo-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin: 40px 0;
+  text-align: left;
+}
+
+.seo-pillar-card {
+  background: #F8FAFC;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 30px 24px;
+  transition: all 0.2s ease;
+}
+
+.seo-pillar-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+  border-color: #CBD5E1;
+}
+
+.pillar-icon {
+  font-size: 30px;
+  margin-bottom: 14px;
+}
+
+.seo-pillar-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+
+.seo-pillar-card p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.seo-article-block {
+  max-width: 860px;
+  margin: 40px auto 0;
+  text-align: left;
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: 38px 34px;
+  box-shadow: var(--shadow-sm);
+}
+
+.seo-article-block h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.4px;
+  margin: 24px 0 12px;
+}
+
+.seo-article-block h3:first-child {
+  margin-top: 0;
+}
+
+.seo-article-block p {
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.seo-steps-list {
+  padding-left: 20px;
+  margin-bottom: 24px;
+}
+
+.seo-steps-list li {
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.seo-features-checklist {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.seo-features-checklist li {
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 10px;
+  position: relative;
+  padding-left: 24px;
+}
+
+.seo-features-checklist li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+@media (max-width: 800px) {
+  .seo-pillars-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

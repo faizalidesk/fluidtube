@@ -5,6 +5,7 @@ import HowItWorks from "./components/HowItWorks";
 import Resolutions from "./components/Resolutions";
 import Features from "./components/Features";
 import Faq from "./components/Faq";
+import SeoGuide from "./components/SeoGuide";
 import CtaBanner from "./components/CtaBanner";
 import Footer from "./components/Footer";
 import PolicyModal from "./components/PolicyModal";
@@ -54,6 +55,7 @@ export default function App() {
         <Resolutions />
         <Features />
         <Faq />
+        <SeoGuide />
         <CtaBanner />
       </main>
 
