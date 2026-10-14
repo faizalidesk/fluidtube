@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Canonical Domain Enforcer (Prevents CORS 308 redirect issues) -->
+    <script>
+      if (window.location.hostname === "fluidtube.web.id") {
+        window.location.replace("https://www.fluidtube.web.id" + window.location.pathname + window.location.search + window.location.hash);
+      }
+    </script>
+
     <!-- Primary SEO Meta Tags -->
     <title>YouTube Converter — Free Video Downloader & MP3 Converter | FluidTube</title>
     <meta name="title" content="YouTube Converter — Free Video Downloader & MP3 Converter | FluidTube" />
