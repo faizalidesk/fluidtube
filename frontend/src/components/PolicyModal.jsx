@@ -2,16 +2,22 @@ import React, { useEffect } from "react";
 
 export default function PolicyModal({ view, onClose }) {
   useEffect(() => {
+    if (!view) {
+      document.body.style.overflow = "";
+      return;
+    }
+
     function handleKeyDown(e) {
       if (e.key === "Escape") onClose();
     }
     window.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [view, onClose]);
 
   if (!view) return null;
 
