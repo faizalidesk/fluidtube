@@ -11,6 +11,7 @@ import threading
 from typing import Dict, Any, Optional
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -31,6 +32,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOWNLOADS_DIR = os.path.join(BASE_DIR, "downloads")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+FRONTEND_DIST = os.path.join(BASE_DIR, "frontend", "dist")
 
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
@@ -43,8 +45,21 @@ app = FastAPI(
     version="2.1.0",
 )
 
+# Enable CORS for React frontend (Vercel, Cloudflare, Localhost)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Mount static assets
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# Mount React built assets if available
+if os.path.isdir(os.path.join(FRONTEND_DIST, "assets")):
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="react_assets")
 
 # In-memory task registry
 TASKS: Dict[str, Dict[str, Any]] = {}
@@ -144,7 +159,12 @@ def process_video_task(task_id: str, url: str, resolution: str):
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
-    """Renders the main web interface."""
+    """Renders the main web interface (React build if available, else HTML template)."""
+    react_index = os.path.join(FRONTEND_DIST, "index.html")
+    if os.path.isfile(react_index):
+        with open(react_index, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+
     index_file = os.path.join(TEMPLATES_DIR, "index.html")
     if os.path.isfile(index_file):
         with open(index_file, "r", encoding="utf-8") as f:
