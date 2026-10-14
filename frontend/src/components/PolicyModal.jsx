@@ -130,7 +130,7 @@ function AboutContent() {
       <div className="policy-contact-box">
         <p><strong>Platform:</strong> FluidTube Media Utility</p>
         <p><strong>Official Website:</strong> https://www.fluidtube.web.id</p>
-        <p><strong>Primary Support & Compliance:</strong> faizalidesk@gmail.com</p>
+        <p><strong>Primary Support & Compliance:</strong> contact@fluidtube.web.id</p>
         <p><strong>Response Timeframe:</strong> Within 24–48 business hours</p>
       </div>
     </article>
@@ -226,7 +226,7 @@ function PrivacyContent() {
       <h3>5. Contact for Privacy Inquiries</h3>
       <p>
         For inquiries regarding our privacy standards or data protection practices,
-        please contact: <strong>faizalidesk@gmail.com</strong>.
+        please contact: <strong>contact@fluidtube.web.id</strong>.
       </p>
     </article>
   );
@@ -302,7 +302,7 @@ function ContactContent() {
         <h3>Primary Channels</h3>
         <p>
           <strong>Official Support Email:</strong>{" "}
-          <a href="mailto:faizalidesk@gmail.com">faizalidesk@gmail.com</a>
+          <a href="mailto:contact@fluidtube.web.id">contact@fluidtube.web.id</a>
         </p>
         <p>
           <strong>Technical Repository:</strong>{" "}
@@ -360,7 +360,7 @@ function DmcaContent() {
       </p>
       <div className="policy-contact-box">
         <p><strong>Designated Agent:</strong> FluidTube Compliance Desk</p>
-        <p><strong>Email:</strong> faizalidesk@gmail.com</p>
+        <p><strong>Email:</strong> contact@fluidtube.web.id</p>
         <p>
           <strong>Required Details:</strong> URL of the copyrighted work, evidence
           of ownership, and your contact statement.
