@@ -1,6 +1,6 @@
 """
-FluidTube - Web Application Engine
-Production-grade FastAPI server powering the YouTube Downloader & 60 FPS Interpolation web service.
+FluidTube - Video & Audio Downloader Engine
+Production-grade FastAPI server powering the YouTube Downloader & Converter web service.
 """
 
 import os
@@ -11,9 +11,9 @@ import threading
 from typing import Dict, Any, Optional
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 from downloader import Downloader, DownloaderError, UserCancelledException
 from video_processor import ffmpeg_manager
@@ -38,9 +38,9 @@ os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
 # FastAPI application
 app = FastAPI(
-    title="FluidTube 60 Web",
-    description="YouTube Downloader & 60 FPS Frame Interpolation Web API",
-    version="2.0.0",
+    title="FluidTube Web",
+    description="YouTube Downloader & Converter Web API",
+    version="2.1.0",
 )
 
 # Mount static assets
@@ -61,15 +61,14 @@ class InfoRequest(BaseModel):
 class ConvertRequest(BaseModel):
     url: str
     resolution: str = "1080p Full HD"
-    force_60fps: bool = True
 
 
 # =============================================================================
 # BACKGROUND TASK WORKER
 # =============================================================================
 
-def process_video_task(task_id: str, url: str, resolution: str, force_60fps: bool):
-    """Executes download and 60 FPS interpolation in a background thread."""
+def process_video_task(task_id: str, url: str, resolution: str):
+    """Executes download in a background thread."""
     task = TASKS.get(task_id)
     if not task:
         return
@@ -91,12 +90,11 @@ def process_video_task(task_id: str, url: str, resolution: str, force_60fps: boo
         video_info = Downloader.extract_info(url)
         task["video_title"] = video_info.get("title")
 
-        # 2. Download and interpolate
-        final_file, was_interpolated = Downloader.download(
+        # 2. Download and merge
+        final_file, media_type = Downloader.download(
             url=url,
             video_info=video_info,
             resolution_choice=resolution,
-            force_60fps=force_60fps,
             output_dir=DOWNLOADS_DIR,
             progress_callback=progress_callback,
             cancel_event=cancel_event,
@@ -111,7 +109,7 @@ def process_video_task(task_id: str, url: str, resolution: str, force_60fps: boo
         task["filepath"] = final_file
         task["filename"] = os.path.basename(final_file)
         task["file_size_formatted"] = format_filesize(file_size)
-        task["was_interpolated"] = was_interpolated
+        task["media_type"] = media_type
         task["download_url"] = f"/api/download/{task_id}"
 
         logger.info("Task %s completed successfully: %s", task_id, final_file)
@@ -124,20 +122,19 @@ def process_video_task(task_id: str, url: str, resolution: str, force_60fps: boo
 
     except DownloaderError as de:
         task["status"] = "error"
-        task["status_text"] = "Conversion failed"
+        task["status_text"] = "Download failed"
         task["details_text"] = str(de)
         task["error"] = str(de)
-        logger.warning("Task %s failed with DownloaderError: %s", task_id, de)
+        logger.warning("Task %s failed: %s", task_id, de)
 
     except Exception as e:
         task["status"] = "error"
-        task["status_text"] = "Internal processing error"
+        task["status_text"] = "Processing error"
         task["details_text"] = str(e)
         task["error"] = str(e)
         logger.exception("Task %s encountered unexpected exception", task_id)
 
     finally:
-        # Periodic disk maintenance
         cleanup_old_files(DOWNLOADS_DIR, max_age_hours=2.0)
 
 
@@ -185,9 +182,6 @@ async def get_video_info(req: InfoRequest):
                 "duration": info.get("duration"),
                 "duration_str": info.get("duration_str"),
                 "thumbnail": info.get("thumbnail"),
-                "overall_fps": info.get("overall_fps"),
-                "max_native_fps": info.get("max_native_fps"),
-                "has_native_60fps": info.get("has_native_60fps"),
             },
         }
     except DownloaderError as de:
@@ -198,7 +192,7 @@ async def get_video_info(req: InfoRequest):
 
 @app.post("/api/convert")
 async def start_conversion(req: ConvertRequest, background_tasks: BackgroundTasks):
-    """Dispatches asynchronous download and 60 FPS motion interpolation."""
+    """Dispatches asynchronous video or audio download."""
     url = req.url.strip()
     if not url:
         raise HTTPException(status_code=400, detail="Missing YouTube URL")
@@ -210,11 +204,10 @@ async def start_conversion(req: ConvertRequest, background_tasks: BackgroundTask
         "task_id": task_id,
         "status": "queued",
         "progress": 0.0,
-        "status_text": "Queued for processing...",
-        "details_text": "Waiting for worker thread...",
+        "status_text": "Queued for download...",
+        "details_text": "Connecting to server...",
         "filename": None,
         "filepath": None,
-        "was_interpolated": False,
         "error": None,
         "created_at": time.time(),
         "updated_at": time.time(),
@@ -224,7 +217,7 @@ async def start_conversion(req: ConvertRequest, background_tasks: BackgroundTask
     # Run in background daemon thread
     thread = threading.Thread(
         target=process_video_task,
-        args=(task_id, url, req.resolution, req.force_60fps),
+        args=(task_id, url, req.resolution),
         daemon=True,
     )
     thread.start()
@@ -234,7 +227,7 @@ async def start_conversion(req: ConvertRequest, background_tasks: BackgroundTask
 
 @app.get("/api/progress/{task_id}")
 async def get_task_progress(task_id: str):
-    """Poll endpoint for tracking task conversion progress."""
+    """Poll endpoint for tracking task download progress."""
     task = TASKS.get(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -247,7 +240,6 @@ async def get_task_progress(task_id: str):
         "details_text": task["details_text"],
         "filename": task.get("filename"),
         "file_size": task.get("file_size_formatted"),
-        "was_interpolated": task.get("was_interpolated", False),
         "download_url": task.get("download_url"),
         "error": task.get("error"),
     }
@@ -255,7 +247,7 @@ async def get_task_progress(task_id: str):
 
 @app.post("/api/cancel/{task_id}")
 async def cancel_task(task_id: str):
-    """Cancels a running task."""
+    """Cancels an active download."""
     task = TASKS.get(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -268,14 +260,14 @@ async def cancel_task(task_id: str):
 
 @app.get("/api/download/{task_id}")
 async def download_file(task_id: str):
-    """Directly delivers the processed video or audio file to the client browser."""
+    """Delivers the downloaded file to the browser."""
     task = TASKS.get(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
 
     filepath = task.get("filepath")
     if not filepath or not os.path.isfile(filepath):
-        raise HTTPException(status_code=404, detail="Processed file not found on server")
+        raise HTTPException(status_code=404, detail="File not found on server")
 
     filename = task.get("filename", os.path.basename(filepath))
     media_type = "video/mp4" if filename.endswith(".mp4") else "audio/mpeg"
@@ -287,10 +279,6 @@ async def download_file(task_id: str):
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
-
-# =============================================================================
-# CLI ENTRY POINT
-# =============================================================================
 
 if __name__ == "__main__":
     import uvicorn

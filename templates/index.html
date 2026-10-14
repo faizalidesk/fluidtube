@@ -3,196 +3,412 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FluidTube — YouTube Downloader & 60 FPS Frame Interpolator</title>
-  <meta name="description" content="FluidTube: Download YouTube videos and guarantee silky 60 FPS output via native stream fetching or FFmpeg motion vector frame interpolation.">
+  <title>FluidTube — Modern YouTube Video & Audio Downloader</title>
+  <meta name="description" content="Fast, high-quality YouTube video and audio converter. Download in 1080p, 720p, 480p, 360p, 144p MP4 or convert directly to 192kbps MP3.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
-  <!-- Ambient background glow -->
-  <div class="bg-glow glow-1"></div>
-  <div class="bg-glow glow-2"></div>
+<body class="saas-body">
 
-  <div class="app-layout">
-    <!-- Navbar / Header -->
-    <header class="header">
-      <div class="brand">
-        <div class="brand-icon">⚡</div>
-        <div class="brand-text">
-          <h1>Fluid<span class="accent-text">Tube</span></h1>
-          <p class="subtitle">YouTube Downloader & 60 FPS Frame Interpolator</p>
+  <!-- Ambient background glow elements -->
+  <div class="bg-shape shape-top"></div>
+  <div class="bg-shape shape-bottom"></div>
+
+  <!-- =========================================================================
+       1. NAVBAR
+       ========================================================================= -->
+  <header class="navbar-wrapper">
+    <nav class="navbar">
+      <a href="/" class="nav-brand">
+        <div class="brand-logo-icon">⚡</div>
+        <span class="brand-name">Fluid<strong>Tube</strong></span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#converter">Converter</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#resolutions">Resolutions</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <div id="ffmpeg-badge" class="engine-badge ready">
+          <span class="badge-dot"></span>
+          <span id="ffmpeg-status-text">Server: Ready</span>
+        </div>
+        <a href="#converter" class="btn btn-nav-cta">Convert Now</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================================
+       2. HERO SECTION & CONVERTER TOOL
+       ========================================================================= -->
+  <section class="hero-section" id="converter">
+    <div class="hero-container">
+      <div class="hero-tag-pill">
+        <span class="star-icon">⚡</span>
+        <span>FAST & SECURE YOUTUBE CONVERTER</span>
+      </div>
+
+      <h1 class="hero-main-title">
+        Download YouTube Videos & Audio<br>
+        <span class="purple-highlight">Quickly and Easily</span>
+      </h1>
+
+      <p class="hero-desc-text">
+        Convert YouTube videos to high-definition MP4 in 1080p, 720p, 480p, 360p, 144p or extract high-bitrate MP3 audio with zero popups or registration.
+      </p>
+
+      <!-- Main Converter Card (Figma/IDE window style) -->
+      <div class="converter-showcase-wrapper">
+        <div class="converter-card">
+          <!-- Top Window Bar -->
+          <div class="card-topbar">
+            <div class="mac-dots">
+              <span class="dot dot-red"></span>
+              <span class="dot dot-yellow"></span>
+              <span class="dot dot-green"></span>
+            </div>
+            <div class="card-topbar-title">FluidTube Downloader</div>
+            <div class="topbar-right-badge">MP4 & MP3 Ready</div>
+          </div>
+
+          <!-- Converter Form -->
+          <div class="converter-inner">
+            <!-- URL Input Bar -->
+            <div class="input-container">
+              <div class="input-box">
+                <span class="input-icon">🔗</span>
+                <input type="text" id="video-url" placeholder="Paste YouTube link here (e.g. https://www.youtube.com/watch?v=...)" autocomplete="off">
+              </div>
+              <button id="btn-paste" class="btn btn-paste-action" title="Paste link from clipboard">Paste</button>
+              <button id="btn-fetch" class="btn btn-fetch-action">
+                <span class="btn-spinner hidden"></span>
+                <span class="btn-text">Search</span>
+              </button>
+            </div>
+
+            <!-- Video Preview Box (Visible after fetch) -->
+            <div id="preview-section" class="preview-box hidden">
+              <div class="preview-thumb-container">
+                <img id="preview-thumb" src="" alt="Thumbnail" loading="lazy">
+                <span id="preview-duration-badge" class="duration-badge">00:00</span>
+              </div>
+              <div class="preview-info-container">
+                <h3 id="preview-title" class="preview-video-title">Video Title</h3>
+                <p id="preview-channel" class="preview-channel-name">Channel Name</p>
+                <div class="preview-pills-row">
+                  <span id="pill-duration" class="pill-badge">⏱️ 00:00</span>
+                  <span class="pill-badge stream-ready">✓ Stream Verified</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resolution Controls: DROPDOWN ONLY -->
+            <div class="control-box">
+              <div class="control-label-row">
+                <span class="control-icon">🎯</span>
+                <div>
+                  <label for="select-resolution" class="control-title">Select Quality / Format</label>
+                  <p class="control-subtitle">Choose your preferred video resolution or audio format</p>
+                </div>
+              </div>
+
+              <!-- Styled Dropdown -->
+              <div class="select-dropdown-container">
+                <select id="select-resolution">
+                  <option value="1080p Full HD" selected>1080p Full HD (1920x1080 MP4)</option>
+                  <option value="720p HD">720p HD (1280x720 MP4)</option>
+                  <option value="480p SD">480p SD (854x480 MP4)</option>
+                  <option value="360p Medium">360p Medium (640x360 MP4)</option>
+                  <option value="144p Low">144p Low (Lightweight / Low Data MP4)</option>
+                  <option value="Best Quality Available">Best Quality Available (Original)</option>
+                  <option value="Audio Only (MP3)">Audio Only (192kbps MP3)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Action Download CTA Button -->
+            <div class="action-cta-area">
+              <button id="btn-start" class="btn btn-main-cta">
+                <span>Download Video</span>
+              </button>
+            </div>
+
+            <!-- Progress Box (Visible during download) -->
+            <div id="progress-section" class="progress-box hidden">
+              <div class="progress-info-row">
+                <div class="progress-title-box">
+                  <span class="pulsing-dot"></span>
+                  <span id="progress-status" class="progress-status-label">Downloading (45% - 5.2 MB/s)...</span>
+                </div>
+                <span id="progress-percentage" class="progress-pct-badge">0%</span>
+              </div>
+              <div class="progress-track">
+                <div id="progress-bar-fill" class="progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="progress-footer-row">
+                <span id="progress-details" class="progress-details-text">Initializing stream connection...</span>
+                <button id="btn-cancel" class="btn btn-cancel-action">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Result Box (Visible when finished) -->
+            <div id="result-section" class="result-box hidden">
+              <div class="result-headline-row">
+                <div class="result-check-icon">✓</div>
+                <div>
+                  <h4 class="result-main-title">Download Ready!</h4>
+                  <p class="result-desc">Your file has been prepared and is ready to save.</p>
+                </div>
+              </div>
+              <div class="result-file-details">
+                <div class="file-name-meta">
+                  <span class="file-icon-badge">📁</span>
+                  <span id="result-filename" class="file-title-text">video.mp4</span>
+                </div>
+                <span id="result-filesize" class="file-size-pill">42.5 MB</span>
+              </div>
+              <div class="result-action-buttons">
+                <a id="btn-download-file" href="#" class="btn btn-download-cta" download>Download File</a>
+                <button id="btn-reset" class="btn btn-convert-another">Convert Another Video</button>
+              </div>
+            </div>
+
+            <!-- Error Notice Box -->
+            <div id="error-alert" class="alert-message-box hidden">
+              <span class="alert-warning-icon">⚠️</span>
+              <div class="alert-text-content">
+                <div class="alert-heading">Notice</div>
+                <p id="error-message">Error details...</p>
+              </div>
+              <button id="btn-close-error" class="btn-dismiss-alert">&times;</button>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="header-badges">
-        <div id="ffmpeg-badge" class="status-badge checking">
-          <span class="status-dot"></span>
-          <span id="ffmpeg-status-text">Checking Engine...</span>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       3. SECTION: HOW IT WORKS (3 Simple Steps)
+       ========================================================================= -->
+  <section class="section-how" id="how-it-works">
+    <div class="content-container">
+      <div class="section-badge-pill">HOW IT WORKS</div>
+      <h2 class="section-main-heading">Download Any Video in 3 Easy Steps</h2>
+      <p class="section-sub-heading">Simple, streamlined, and designed for speed.</p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Paste Link</h3>
+          <p>Copy the link of any YouTube video or Shorts and paste it into the converter box above.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>Select Quality</h3>
+          <p>Choose your desired resolution from 144p up to 1080p Full HD, or select MP3 for audio only.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>Direct Download</h3>
+          <p>Click Download and receive the clean MP4 or MP3 file directly to your device.</p>
         </div>
       </div>
-    </header>
+    </div>
+  </section>
 
-    <!-- Main Converter Container -->
-    <main class="main-card">
-      <!-- Input Section -->
-      <section class="section-input">
-        <label for="video-url" class="section-label">Paste YouTube Video Link</label>
-        <div class="input-bar">
-          <div class="input-wrapper">
-            <span class="url-icon">🔗</span>
-            <input type="text" id="video-url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
-          </div>
-          <button id="btn-paste" class="btn btn-secondary" title="Paste from clipboard">
-            <span>📋</span> Paste
-          </button>
-          <button id="btn-fetch" class="btn btn-primary">
-            <span class="btn-spinner hidden"></span>
-            <span class="btn-text">🔍 Fetch Info</span>
-          </button>
-        </div>
-      </section>
+  <!-- =========================================================================
+       4. SECTION: SUPPORTED RESOLUTIONS & FORMATS
+       ========================================================================= -->
+  <section class="section-resolutions" id="resolutions">
+    <div class="content-container">
+      <div class="section-badge-pill">FORMATS & QUALITY</div>
+      <h2 class="section-main-heading">All Video & Audio Resolutions Supported</h2>
+      <p class="section-sub-heading">From lightweight data-saver formats to high-definition video.</p>
 
-      <!-- Video Preview Card (Hidden until URL fetched) -->
-      <section id="preview-section" class="preview-card hidden">
-        <div class="preview-thumbnail-wrapper">
-          <img id="preview-thumb" src="" alt="Video Thumbnail" loading="lazy">
-          <span id="preview-duration-badge" class="badge-overlay">00:00</span>
+      <div class="resolutions-grid">
+        <div class="res-card">
+          <div class="res-tag">Full HD</div>
+          <h4>1080p Video</h4>
+          <p>Pristine 1920x1080 resolution for high-end displays, desktop monitors, and TVs.</p>
         </div>
-        <div class="preview-meta">
-          <h2 id="preview-title" class="preview-title">Video Title</h2>
-          <p id="preview-channel" class="preview-channel">Channel Name</p>
-          <div class="meta-pills">
-            <span id="pill-fps" class="pill pill-fps">⚡ 60 FPS Native</span>
-            <span id="pill-duration" class="pill pill-duration">⏱️ 00:00</span>
-          </div>
-          <p id="preview-engine-hint" class="engine-hint">
-            ⚡ 60 FPS motion interpolation engine ready.
+        <div class="res-card">
+          <div class="res-tag">HD</div>
+          <h4>720p Video</h4>
+          <p>Standard high definition format balancing crisp visual clarity with fast download speed.</p>
+        </div>
+        <div class="res-card">
+          <div class="res-tag">SD</div>
+          <h4>480p Video</h4>
+          <p>Standard definition suitable for tablets and laptops with low storage consumption.</p>
+        </div>
+        <div class="res-card">
+          <div class="res-tag">Mobile</div>
+          <h4>360p Video</h4>
+          <p>Optimized for mobile devices and modest cellular internet connections.</p>
+        </div>
+        <div class="res-card">
+          <div class="res-tag">Lite</div>
+          <h4>144p Video</h4>
+          <p>Ultra-compact data saver format for quick previews and minimal storage.</p>
+        </div>
+        <div class="res-card audio-res-card">
+          <div class="res-tag audio-tag">Audio</div>
+          <h4>192kbps MP3</h4>
+          <p>Crystal clear audio extraction for podcasts, music, and voice tracks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       5. SECTION: FEATURES & ADVANTAGES
+       ========================================================================= -->
+  <section class="section-features" id="features">
+    <div class="content-container">
+      <div class="section-badge-pill">WHY FLUIDTUBE</div>
+      <h2 class="section-main-heading">Built for Speed, Privacy, and Ease</h2>
+      <p class="section-sub-heading">A modern tool that respects your device and bandwidth.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">⚡</div>
+          <h4>Fast Cloud Extraction</h4>
+          <p>Processes and merges video and audio streams rapidly on server hardware before delivering to your browser.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-box">🛡️</div>
+          <h4>No Registration & Free</h4>
+          <p>No user accounts, subscriptions, or credit cards required. Convert as many videos as you need.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-box">📱</div>
+          <h4>Cross-Device Compatible</h4>
+          <p>Works smoothly across Windows, macOS, Android, iPhone, and Linux via modern web browsers.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon-box">🔒</div>
+          <h4>Clean & Ad-Free Interface</h4>
+          <p>No deceptive popups, push notifications, or shady redirects. Clean downloads directly from YouTube.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       6. SECTION: FAQ (Frequently Asked Questions)
+       ========================================================================= -->
+  <section class="section-faq" id="faq">
+    <div class="content-container">
+      <div class="section-badge-pill">FAQ</div>
+      <h2 class="section-main-heading">Frequently Asked Questions</h2>
+      <p class="section-sub-heading">Common inquiries regarding video conversions and downloads.</p>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-question">What resolutions are available for download?</div>
+          <div class="faq-answer">FluidTube supports 1080p Full HD, 720p HD, 480p SD, 360p, 144p video formats, as well as MP3 audio extraction.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Is FluidTube free to use?</div>
+          <div class="faq-answer">Yes, FluidTube is 100% free and open-source. There are no fees, hidden paywalls, or limits on conversions.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Where are my downloaded files saved?</div>
+          <div class="faq-answer">Downloaded files are saved directly to your browser's default download folder (usually "Downloads" on your PC or phone).</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question">Can I download YouTube Shorts?</div>
+          <div class="faq-answer">Yes, simply copy the URL of the YouTube Short and paste it into the converter box.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       6.5 CTA BANNER
+       ========================================================================= -->
+  <section class="section-cta-banner">
+    <div class="content-container banner-inner">
+      <div class="banner-tag">FREE & FAST UTILITY</div>
+      <h2 class="banner-title">Ready to Save Your Favorite Videos?</h2>
+      <p class="banner-subtitle">No registration required. Unlimited high-speed downloads directly to your device.</p>
+      <a href="#converter" class="btn btn-banner-cta">Start Converting Now</a>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       7. FOOTER
+       ========================================================================= -->
+  <footer class="footer-wrapper">
+    <div class="footer-container">
+      <div class="footer-top-grid">
+        <!-- Brand column -->
+        <div class="footer-col-brand">
+          <a href="/" class="nav-brand">
+            <div class="brand-logo-icon">⚡</div>
+            <span class="brand-name">Fluid<strong>Tube</strong></span>
+          </a>
+          <p class="footer-brand-desc">
+            Fast, high-quality YouTube video and audio downloader. Free, clean, and reliable media utility.
           </p>
         </div>
-      </section>
 
-      <!-- Settings Section -->
-      <section class="section-settings">
-        <div class="settings-grid">
-          <!-- Resolution Dropdown -->
-          <div class="setting-item">
-            <label for="select-resolution" class="setting-label">Target Quality</label>
-            <div class="select-wrapper">
-              <select id="select-resolution">
-                <option value="1080p Full HD" selected>1080p Full HD (Recommended)</option>
-                <option value="720p HD">720p HD</option>
-                <option value="Best Quality Available">Best Quality Available (Original)</option>
-                <option value="Audio Only (MP3)">Audio Only (MP3)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- 60 FPS Motion Interpolation Toggle -->
-          <div class="setting-item toggle-item">
-            <div class="toggle-info">
-              <span class="setting-label">Force 60 FPS Output</span>
-              <p class="setting-subtext">Synthesizes smooth 60 FPS frames via FFmpeg if source is 24/30 FPS.</p>
-            </div>
-            <label class="switch">
-              <input type="checkbox" id="toggle-60fps" checked>
-              <span class="slider round"></span>
-            </label>
-          </div>
-        </div>
-      </section>
-
-      <!-- Action Button Area -->
-      <section class="section-action">
-        <button id="btn-start" class="btn btn-cta">
-          <span class="btn-cta-icon">🚀</span>
-          <span>Start Download & Process 60 FPS</span>
-        </button>
-      </section>
-
-      <!-- Progress Section (Hidden until processing begins) -->
-      <section id="progress-section" class="progress-card hidden">
-        <div class="progress-header">
-          <div class="progress-status-box">
-            <span class="spinner-pulse"></span>
-            <span id="progress-status" class="progress-status-text">Downloading (45% - 5.2 MB/s)...</span>
-          </div>
-          <span id="progress-percentage" class="progress-pct">0%</span>
+        <!-- Links columns -->
+        <div class="footer-col">
+          <h5>Navigation</h5>
+          <ul>
+            <li><a href="#converter">Converter</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#resolutions">Resolutions</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
         </div>
 
-        <div class="progress-bar-track">
-          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+        <div class="footer-col">
+          <h5>Resolutions</h5>
+          <ul>
+            <li><a href="#converter">1080p Full HD</a></li>
+            <li><a href="#converter">720p HD</a></li>
+            <li><a href="#converter">480p SD</a></li>
+            <li><a href="#converter">360p & 144p</a></li>
+            <li><a href="#converter">MP3 Audio</a></li>
+          </ul>
         </div>
 
-        <div class="progress-footer">
-          <span id="progress-details" class="progress-details-text">Initializing stream connection...</span>
-          <button id="btn-cancel" class="btn btn-danger btn-sm">⏹️ Cancel</button>
-        </div>
-      </section>
-
-      <!-- Result / Download Section (Hidden until complete) -->
-      <section id="result-section" class="result-card hidden">
-        <div class="result-header">
-          <div class="result-icon">🎉</div>
-          <div>
-            <h3 id="result-heading" class="result-title">Your 60 FPS Video is Ready!</h3>
-            <p id="result-subtext" class="result-subtitle">Rendered with smooth motion interpolation.</p>
-          </div>
+        <div class="footer-col">
+          <h5>Open Source</h5>
+          <ul>
+            <li><a href="https://github.com/faizalidesk/fluidtube" target="_blank" rel="noopener">GitHub Repository</a></li>
+            <li><a href="https://ffmpeg.org" target="_blank" rel="noopener">FFmpeg</a></li>
+            <li><a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a></li>
+            <li><a href="https://fastapi.tiangolo.com" target="_blank" rel="noopener">FastAPI</a></li>
+          </ul>
         </div>
 
-        <div class="result-file-info">
-          <div class="file-name-row">
-            <span class="file-icon">📁</span>
-            <span id="result-filename" class="file-name">video_60fps.mp4</span>
-          </div>
-          <span id="result-filesize" class="file-size-badge">42.5 MB</span>
+        <div class="footer-col">
+          <h5>Legal</h5>
+          <ul>
+            <li><a href="#">Terms of Use</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Disclaimer</a></li>
+          </ul>
         </div>
-
-        <div class="result-actions">
-          <a id="btn-download-file" href="#" class="btn btn-download" download>
-            <span>📥 Download File</span>
-          </a>
-          <button id="btn-reset" class="btn btn-secondary">
-            <span>🔄 Convert Another Video</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Error Alert Box -->
-      <div id="error-alert" class="alert-box alert-error hidden">
-        <span class="alert-icon">⚠️</span>
-        <div class="alert-content">
-          <h4 class="alert-title">Conversion Notice</h4>
-          <p id="error-message">Error details...</p>
-        </div>
-        <button id="btn-close-error" class="alert-close">&times;</button>
       </div>
-    </main>
+    </div>
 
-    <!-- Value Propositions / FAQ Section -->
-    <section class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h3>Guaranteed 60 FPS</h3>
-        <p>If the source video is 60fps, it downloads natively. If it's 24fps or 30fps, FFmpeg creates new intermediate frames using motion vectors.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🛡️</div>
-        <h3>100% Server-Side Processing</h3>
-        <p>Motion interpolation runs on the server. Generating frames uses zero extra mobile data on your device.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🎯</div>
-        <h3>Audio & Video Presets</h3>
-        <p>Supports 1080p Full HD, 720p HD, best available source quality, and high-fidelity 192kbps MP3 audio extraction.</p>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <p>© 2026 FluidTube — High-FPS Video Processing Engine. Built with FastAPI & FFmpeg.</p>
-    </footer>
-  </div>
+    <!-- Purple Bottom Copyright Bar -->
+    <div class="footer-bottom-bar">
+      <p>© 2026 FluidTube. All Rights Reserved. Built with FastAPI & FFmpeg.</p>
+    </div>
+  </footer>
 
   <script src="/static/js/app.js"></script>
 </body>

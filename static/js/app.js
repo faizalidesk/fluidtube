@@ -1,6 +1,6 @@
 /**
  * FluidTube — Client Application Script
- * Handles asynchronous video info fetching, real-time progress polling, and direct downloads.
+ * Clean YouTube video and audio converter.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnFetch = document.getElementById("btn-fetch");
   const btnStart = document.getElementById("btn-start");
   const selectRes = document.getElementById("select-resolution");
-  const toggle60fps = document.getElementById("toggle-60fps");
 
   // Preview Card Elements
   const previewSection = document.getElementById("preview-section");
@@ -18,9 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const previewTitle = document.getElementById("preview-title");
   const previewChannel = document.getElementById("preview-channel");
   const previewDuration = document.getElementById("preview-duration-badge");
-  const pillFps = document.getElementById("pill-fps");
   const pillDuration = document.getElementById("pill-duration");
-  const engineHint = document.getElementById("preview-engine-hint");
 
   // Progress Card Elements
   const progressSection = document.getElementById("progress-section");
@@ -42,41 +39,71 @@ document.addEventListener("DOMContentLoaded", () => {
   const errorMessage = document.getElementById("error-message");
   const btnCloseError = document.getElementById("btn-close-error");
 
-  // Status Badge
+  // Badge
   const ffmpegBadge = document.getElementById("ffmpeg-badge");
   const ffmpegStatusText = document.getElementById("ffmpeg-status-text");
 
   // State
-  let currentVideoData = null;
   let activeTaskId = null;
   let pollInterval = null;
 
   // =========================================================================
-  // 1. INITIALIZATION & HEALTH CHECK
+  // 1. HEALTH CHECK
   // =========================================================================
-
   async function checkHealth() {
     try {
       const res = await fetch("/api/health");
       const data = await res.json();
       if (data.ffmpeg_available) {
-        ffmpegBadge.className = "status-badge ready";
-        ffmpegStatusText.textContent = "● FFmpeg 60FPS: Ready";
+        ffmpegStatusText.textContent = "Server: Ready";
+        ffmpegBadge.classList.add("ready");
       } else {
-        ffmpegBadge.className = "status-badge warning";
-        ffmpegStatusText.textContent = "⚠️ FFmpeg Missing";
+        ffmpegBadge.style.background = "#FEF3C7";
+        ffmpegBadge.style.color = "#D97706";
+        ffmpegStatusText.textContent = "FFmpeg: Missing";
       }
     } catch {
-      ffmpegBadge.className = "status-badge warning";
-      ffmpegStatusText.textContent = "⚠️ Server Offline";
+      ffmpegBadge.style.background = "#FEE2E2";
+      ffmpegBadge.style.color = "#DC2626";
+      ffmpegStatusText.textContent = "Server: Offline";
     }
   }
   checkHealth();
 
   // =========================================================================
-  // 2. CLIPBOARD & INPUT LISTENERS
+  // 2. RESOLUTION DROPDOWN LISTENER & BUTTON LABEL
   // =========================================================================
+  function updateButtonLabel() {
+    if (!selectRes || !btnStart) return;
+    const chosenVal = selectRes.value || "";
+    const spanText = btnStart.querySelector("span");
+    if (!spanText) return;
 
+    if (chosenVal.includes("Audio")) {
+      spanText.textContent = "Download MP3 Audio";
+    } else if (chosenVal.includes("1080p")) {
+      spanText.textContent = "Download Video (1080p Full HD)";
+    } else if (chosenVal.includes("720p")) {
+      spanText.textContent = "Download Video (720p HD)";
+    } else if (chosenVal.includes("480p")) {
+      spanText.textContent = "Download Video (480p SD)";
+    } else if (chosenVal.includes("360p")) {
+      spanText.textContent = "Download Video (360p Medium)";
+    } else if (chosenVal.includes("144p")) {
+      spanText.textContent = "Download Video (144p Low)";
+    } else {
+      spanText.textContent = "Download Video (Best Quality)";
+    }
+  }
+
+  if (selectRes) {
+    selectRes.addEventListener("change", updateButtonLabel);
+    updateButtonLabel();
+  }
+
+  // =========================================================================
+  // 3. CLIPBOARD & INPUT LISTENERS
+  // =========================================================================
   btnPaste.addEventListener("click", async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -84,8 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
         urlInput.value = text.trim();
         fetchVideoInfo();
       }
-    } catch (err) {
-      showError("Clipboard access was blocked by browser. Please paste manually.");
+    } catch {
+      showError("Could not access clipboard. Please paste manually into the input box.");
     }
   });
 
@@ -98,21 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   btnFetch.addEventListener("click", fetchVideoInfo);
 
-  selectRes.addEventListener("change", () => {
-    const isAudio = selectRes.value.includes("Audio Only");
-    if (isAudio) {
-      toggle60fps.checked = false;
-      toggle60fps.disabled = true;
-    } else {
-      toggle60fps.disabled = false;
-      toggle60fps.checked = true;
-    }
-  });
-
   // =========================================================================
-  // 3. FETCH VIDEO METADATA
+  // 4. FETCH VIDEO METADATA
   // =========================================================================
-
   async function fetchVideoInfo() {
     const url = urlInput.value.trim();
     if (!url) {
@@ -135,8 +150,13 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(resData.detail || "Failed to load video information.");
       }
 
-      currentVideoData = resData.data;
-      renderPreview(currentVideoData);
+      const data = resData.data;
+      previewThumb.src = data.thumbnail || "";
+      previewTitle.textContent = data.title || "Unknown Title";
+      previewChannel.textContent = data.uploader ? `Channel: ${data.uploader}` : "";
+      previewDuration.textContent = data.duration_str || "--:--";
+      pillDuration.textContent = `⏱️ ${data.duration_str || "--:--"}`;
+      previewSection.classList.remove("hidden");
 
     } catch (err) {
       showError(err.message);
@@ -145,50 +165,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function renderPreview(data) {
-    previewThumb.src = data.thumbnail || "";
-    previewTitle.textContent = data.title || "Unknown Title";
-    previewChannel.textContent = data.uploader ? `Channel: ${data.uploader}` : "";
-    previewDuration.textContent = data.duration_str || "--:--";
-    pillDuration.textContent = `⏱️ ${data.duration_str || "--:--"}`;
-
-    if (data.has_native_60fps) {
-      pillFps.textContent = `⚡ ${data.max_native_fps} FPS Native`;
-      pillFps.className = "pill pill-fps";
-      engineHint.textContent = "⚡ Native 60 FPS stream detected! Will download directly in full 60 FPS.";
-      engineHint.style.color = "#34D399";
-    } else {
-      pillFps.textContent = `🎞️ Source: ${data.max_native_fps || 30} FPS`;
-      pillFps.className = "pill pill-fps interpolate";
-      engineHint.textContent = "⚡ 60 FPS motion interpolation engine will generate silky 60 FPS frames via FFmpeg.";
-      engineHint.style.color = "#F59E0B";
-    }
-
-    previewSection.classList.remove("hidden");
-  }
-
   function setFetchLoading(loading) {
     const spinner = btnFetch.querySelector(".btn-spinner");
     const text = btnFetch.querySelector(".btn-text");
     if (loading) {
       spinner.classList.remove("hidden");
-      text.textContent = "Fetching...";
+      text.textContent = "Loading...";
       btnFetch.disabled = true;
     } else {
       spinner.classList.add("hidden");
-      text.textContent = "🔍 Fetch Info";
+      text.textContent = "Search";
       btnFetch.disabled = false;
     }
   }
 
   // =========================================================================
-  // 4. CONVERT & MOTION INTERPOLATION TRIGGER
+  // 5. START DOWNLOAD TRIGGER
   // =========================================================================
-
   btnStart.addEventListener("click", async () => {
     const url = urlInput.value.trim();
     if (!url) {
       showError("Please enter a YouTube video URL first.");
+      urlInput.focus();
       return;
     }
 
@@ -196,15 +194,13 @@ document.addEventListener("DOMContentLoaded", () => {
     resultSection.classList.add("hidden");
     progressSection.classList.remove("hidden");
 
-    // UI state
     btnStart.disabled = true;
-    btnStart.style.opacity = "0.6";
-    btnStart.innerHTML = `<span>⏳ Processing...</span>`;
+    btnStart.style.opacity = "0.7";
+    btnStart.querySelector("span").textContent = "Processing...";
 
-    updateProgress(0, "Initiating conversion...", "Connecting to worker thread...");
+    updateProgress(0, "Initiating download...", "Connecting to YouTube stream...");
 
     const resolution = selectRes.value;
-    const force_60fps = toggle60fps.checked && !resolution.includes("Audio Only");
 
     try {
       const response = await fetch("/api/convert", {
@@ -213,13 +209,12 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({
           url,
           resolution,
-          force_60fps,
         }),
       });
 
       const resData = await response.json();
       if (!response.ok) {
-        throw new Error(resData.detail || "Failed to start conversion.");
+        throw new Error(resData.detail || "Failed to start download.");
       }
 
       activeTaskId = resData.task_id;
@@ -233,9 +228,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // =========================================================================
-  // 5. REAL-TIME PROGRESS POLLING
+  // 6. PROGRESS TRACKING
   // =========================================================================
-
   function startProgressPolling(taskId) {
     if (pollInterval) clearInterval(pollInterval);
 
@@ -254,12 +248,12 @@ document.addEventListener("DOMContentLoaded", () => {
           onTaskComplete(task);
         } else if (task.status === "error") {
           clearInterval(pollInterval);
-          showError(task.error || "Video processing failed.");
+          showError(task.error || "Download failed.");
           resetActionUI();
           progressSection.classList.add("hidden");
         } else if (task.status === "cancelled") {
           clearInterval(pollInterval);
-          showError("Process was cancelled.");
+          showError("Download was cancelled.");
           resetActionUI();
           progressSection.classList.add("hidden");
         }
@@ -283,29 +277,17 @@ document.addEventListener("DOMContentLoaded", () => {
     resetActionUI();
     progressSection.classList.add("hidden");
 
-    // Configure Result Card
     resultFilename.textContent = task.filename || "video.mp4";
     resultFilesize.textContent = task.file_size || "--";
     btnDownloadFile.href = task.download_url;
     btnDownloadFile.setAttribute("download", task.filename || "video.mp4");
 
-    const resultHeading = document.getElementById("result-heading");
-    const resultSubtext = document.getElementById("result-subtext");
-    if (task.was_interpolated) {
-      resultHeading.textContent = "🎉 60 FPS Video Ready!";
-      resultSubtext.textContent = "Generated with FFmpeg motion vector interpolation.";
-    } else {
-      resultHeading.textContent = "🎉 Media Ready for Download!";
-      resultSubtext.textContent = "High-definition stream processed successfully.";
-    }
-
     resultSection.classList.remove("hidden");
   }
 
   // =========================================================================
-  // 6. CANCELLATION & RESET
+  // 7. CANCELLATION & RESET
   // =========================================================================
-
   btnCancel.addEventListener("click", async () => {
     if (!activeTaskId) return;
     btnCancel.disabled = true;
@@ -322,23 +304,22 @@ document.addEventListener("DOMContentLoaded", () => {
     resultSection.classList.add("hidden");
     previewSection.classList.add("hidden");
     urlInput.value = "";
-    currentVideoData = null;
     activeTaskId = null;
     hideError();
+    urlInput.focus();
   });
 
   function resetActionUI() {
     btnStart.disabled = false;
     btnStart.style.opacity = "1";
-    btnStart.innerHTML = `<span class="btn-cta-icon">🚀</span><span>Start Download & Process 60 FPS</span>`;
+    updateButtonLabel();
     btnCancel.disabled = false;
-    btnCancel.textContent = "⏹️ Cancel";
+    btnCancel.textContent = "Cancel";
   }
 
   // =========================================================================
-  // 7. ERROR ALERTS
+  // 8. ERROR ALERT
   // =========================================================================
-
   function showError(msg) {
     errorMessage.textContent = msg;
     errorAlert.classList.remove("hidden");
